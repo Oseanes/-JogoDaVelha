@@ -1,25 +1,63 @@
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) {
 
-        int tamanho = 3;
-        String [][] tabularo = new String[tamanho][tamanho];
-        String [] jogadorX = espacoArmazenarJogadas(tamanho);
-        String [] jogadorO = espacoArmazenarJogadas(tamanho);
+        boolean jogoOn = true;
+        String [][] tabularo = new String[3][3];
+        String [] jogadorX = new String[5];
+        String [] jogadorO = new String[5];
 
-        fazerJogada("00", tabularo, "x");
-        fazerJogada("01", tabularo, "x");
-        fazerJogada("02", tabularo, "x");
+        Scanner scanner = new Scanner(System.in);
+        String posicao ;
+        String simbolo;
 
-        // vetor teste
-        String [] teste = {"00", "01", "02"};
-        System.out.println(vitoriaHorizontal(teste));
+        while (jogoOn){
 
-        printTabuleiro(tabularo);
+            try{
+                System.out.println("Informe posicão que deseja jogar, Ex: 01");
+                posicao = scanner.nextLine();
+                System.out.println("Simbolo");
+                simbolo = scanner.nextLine().toLowerCase();
+
+                if(fazerJogada(posicao, tabularo, simbolo)){
+
+                    if(simbolo.equals("x")){
+                        salvarPosicao(jogadorX, posicao);
+                        jogoOn = venceu(jogadorX);
+                    }else{
+                        salvarPosicao(jogadorO, posicao);
+                        jogoOn = venceu(jogadorO);
+                    }
+                    printTabuleiro(tabularo);
+
+                    if(jogoOn) {
+                        jogoOn = empate(tabularo);
+                    }
+                }else {
+                    System.out.println("Posição já foi escolhida");
+                }
+            }catch (RuntimeException ex){
+                System.out.println(ex.getMessage());
+            }
+        }
+        System.out.println("FIM DO JOGO!");
     }
 
-    public static void fazerJogada(String posicao, String [][] tabuleiro, String jogador){
+    public static boolean venceu( String [] jogadas){
+        if(vitoriaNaVertical(jogadas)){
+            return false;
+        } else if (vitoriaNaHorizontal(jogadas)) {
+            return false;
+        } else if(vitoriaDiagonal(jogadas)){
+            return false;
+        }else {
+            return true;
+        }
+    }
+
+    // Efetua uma jogada no tabuleiro em uma pocisão vazia.
+    public static boolean fazerJogada(String posicao, String [][] tabuleiro, String jogador){
         int linha ;
         int coluna ;
 
@@ -28,37 +66,107 @@ public class Main {
 
         if(tabuleiro[linha][coluna] == null){
             tabuleiro[linha][coluna] =  jogador;
+            return true;
         }
-    }
-    public static boolean vitoriaHorizontal(String [] jogadas){
-        return percorreHorizontal(jogadas) == 3;
+        return false;
     }
 
-    private static int percorreHorizontal( String [] jogadas){
+    public static boolean vitoriaNaHorizontal(String [] jogadas){
+        return confereVitoria(jogadas, 0);
+    }
+
+    public static boolean vitoriaNaVertical(String [] jogadas){
+        return confereVitoria(jogadas, 1);
+    }
+
+    public static boolean vitoriaDiagonal(String [] jogadas){
+        if( vitoriaDiagonal1(jogadas) || vitoriaDiagonal2(jogadas)){
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean vitoriaDiagonal1(String [] jogadas){
+        // Soma l-> linha e c -> coluna que deve ser igual a 2, isso significa que é uma das posições na diagonal {20, 11, 02}
+        int l;
+        int c;
+        int cont = 0;
+        for(String jogada: jogadas){
+            if(jogada != null){
+                l = index(jogada.charAt(0));
+                c = index(jogada.charAt(1));
+                if( (l + c) == 2){
+                    cont ++;
+                }
+            }
+        }
+        return cont == 3;
+    }
+
+    public static boolean vitoriaDiagonal2(String [] jogadas){
+        // verifica se lina coluna são iguais {00, 11, 22}
+        int l;
+        int c;
+        int cont = 0;
+        for(String jogada: jogadas){
+            if(jogada != null){
+                l = index(jogada.charAt(0));
+                c = index(jogada.charAt(1));
+                if( l == c){
+                    cont ++;
+                }
+            }
+        }
+        return cont == 3;
+    }
+    public static boolean vitoriaDiagonal2(){
+        return false;
+    }
+    private static boolean confereVitoria( String [] jogadas, int linhaOuColuna){
         int jogadaNaHorizontal = 0;
-        for (String jogada : jogadas) {
-            jogadaNaHorizontal += verificaLinha(jogada);
+        for(int j = 0; j < 3; j++){
+            for (String jogada : jogadas) {
+                jogadaNaHorizontal += verificaOcorrencia(jogada, j, linhaOuColuna);
+            }
+            if( jogadaNaHorizontal == 3){
+                return true;
+            }
+            jogadaNaHorizontal = 0;
         }
-        return jogadaNaHorizontal;
+        return false;
     }
 
-    private static int verificaLinha(String posicao){
+    private static int verificaOcorrencia(String posicao, int linha, int linhaOuColuna){
 
         if( posicao != null){
-            System.out.println("Index: " + index(posicao.charAt(0)));
-            if( index(posicao.charAt(0)) == 0) return 1;
+            if( index(posicao.charAt(linhaOuColuna)) == linha) return 1;
         }
         return 0;
-    }
-
-    private static String [] espacoArmazenarJogadas( int tamanho){
-        return new String[tamanho];
     }
 
     private static int index( char caracter){
         return Integer.parseInt(String.valueOf(caracter));
     }
 
+    public static void salvarPosicao(String [] jogadas, String posicao){
+        for (int i = 0; i < 5; i++) {
+            if(jogadas[i] == null){
+                jogadas[i] = posicao;
+                break;
+            }
+        }
+    }
+public static boolean empate(String [][] tabuleiro){
+    for (String [] linha: tabuleiro){
+        for (String posicao: linha){
+            if(posicao == null){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+    // Mostra tabuleiro na tela
     public static void printTabuleiro(String [][] tabuleiro){
         for (String [] linha: tabuleiro){
             for ( String jogada: linha){
@@ -71,5 +179,6 @@ public class Main {
             System.out.println("\n");
         }
     }
+
 
 }
