@@ -80,10 +80,7 @@ public class Main {
     }
 
     public static boolean vitoriaDiagonal(String [] jogadas){
-        if( vitoriaDiagonal1(jogadas) || vitoriaDiagonal2(jogadas)){
-            return true;
-        }
-        return false;
+        return vitoriaDiagonal1(jogadas) || vitoriaDiagonal2(jogadas);
     }
 
     public static boolean vitoriaDiagonal1(String [] jogadas){
@@ -118,9 +115,6 @@ public class Main {
             }
         }
         return cont == 3;
-    }
-    public static boolean vitoriaDiagonal2(){
-        return false;
     }
     private static boolean confereVitoria( String [] jogadas, int linhaOuColuna){
         int jogadaNaHorizontal = 0;
